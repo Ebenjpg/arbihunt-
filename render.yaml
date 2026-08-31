@@ -1,0 +1,97 @@
+# Render.com Blueprint for ArbiHunt Scanner
+# Deploy: Render Dashboard -> New -> Blueprint -> point at this repository.
+# Free tier works; the backend web service sleeps after 15 min of inactivity.
+
+services:
+  # ------------------------------------------------------------------
+  # Backend API (Fastify) - https://arbihunt-backend.onrender.com
+  # ------------------------------------------------------------------
+  - type: web
+    name: arbihunt-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      # Secrets/keys are NOT stored in git (.env is git-ignored).
+      # Fill them in the Render dashboard or accept the placeholder prompts.
+      - key: BACKEND_PORT
+        value: 10000
+      - key: TICKER_POLL_MS
+        value: 15000
+      - key: ORDERBOOK_POLL_MS
+        value: 3000
+      - key: SCAN_INTERVAL_MS
+        value: 10000
+      - key: MAX_CANDIDATES_PER_SCAN
+        value: 400
+      - key: WS_ENABLED
+        value: true
+      - key: DEFAULT_CAPITAL
+        value: 100
+      - key: MIN_PROFIT_PCT
+        value: 0.10
+      - key: DEMO_MODE
+        value: false
+      - key: LIVE_METADATA_ENABLED
+        value: true
+      # ---- API keys: enter your real values in the Render dashboard ----
+      - key: BINGX_API_KEY
+        sync: false
+      - key: BINGX_API_SECRET
+        sync: false
+      - key: BITGET_API_KEY
+        sync: false
+      - key: BITGET_API_SECRET
+        sync: false
+      - key: XT_API_KEY
+        sync: false
+      - key: MEXC_API_KEY
+        sync: false
+      - key: MEXC_API_SECRET
+        sync: false
+      - key: BYBIT_API_KEY
+        sync: false
+      - key: BYBIT_API_SECRET
+        sync: false
+      - key: BITRUE_API_KEY
+        sync: false
+      - key: BITRUE_API_SECRET
+        sync: false
+      - key: BINANCE_API_KEY
+        sync: false
+      - key: BINANCE_API_SECRET
+        sync: false
+      - key: OKX_API_KEY
+        sync: false
+      - key: OKX_API_SECRET
+        sync: false
+      - key: OKX_API_PASSPHRASE
+        sync: false
+      - key: CRYPTOCOM_API_KEY
+        sync: false
+      - key: CRYPTOCOM_API_SECRET
+        sync: false
+      - key: PHEMEX_API_KEY
+        sync: false
+      - key: PHEMEX_API_SECRET
+        sync: false
+
+  # ------------------------------------------------------------------
+  # Frontend dashboard (Vite static build) - proxies /api to the backend
+  # ------------------------------------------------------------------
+  - type: web
+    name: arbihunt-frontend
+    runtime: static
+    buildCommand: npm install && npm run build -w @arbihunt/frontend
+    staticPublishPath: frontend/dist
+    routes:
+      # /api/* -> backend service (server-side proxy, no CORS issues)
+      - type: rewrite
+        source: /api/*
+        destination: https://arbihunt-backend.onrender.com/api/*
+      # SPA fallback (React router / direct URL loads)
+      - type: rewrite
+        source: /*
+        destination: /index.html

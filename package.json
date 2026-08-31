@@ -1,0 +1,27 @@
+{
+  "name": "arbihunt-scanner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local read-only cross-exchange crypto arbitrage scanner with 25 exchange adapters",
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev -w @arbihunt/backend\" \"npm run dev -w @arbihunt/frontend\"",
+    "dev:backend": "npm run dev -w @arbihunt/backend",
+    "dev:frontend": "npm run dev -w @arbihunt/frontend",
+    "build": "npm run build -w @arbihunt/backend",
+    "start": "npm run start -w @arbihunt/backend",
+    "test": "npm run test -w @arbihunt/shared --if-present && npm run test -w @arbihunt/backend --if-present",
+    "typecheck": "npm run typecheck -w @arbihunt/shared --if-present && npm run typecheck -w @arbihunt/backend --if-present && npm run typecheck -w @arbihunt/frontend --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
