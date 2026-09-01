@@ -58,6 +58,13 @@ export interface AppConfig {
   assetMetadataRefreshMs: number;
   /** Enable fetching live asset metadata from public exchange APIs. */
   liveMetadataEnabled: boolean;
+  /**
+   * Keep-alive self-ping (Render free tier sleeps after 15 min of inactivity).
+   * The backend pings its own public /api/health URL every 14 min to stay awake.
+   * Empty URL disables the pinger (local dev never needs it).
+   */
+  keepAliveUrl: string;
+  keepAliveMs: number;
 }
 
 export const config: AppConfig = {
@@ -85,4 +92,6 @@ export const config: AppConfig = {
   opportunityRetentionMs: intEnv('OPPORTUNITY_RETENTION_MS', 300000),
   assetMetadataRefreshMs: intEnv('ASSET_METADATA_REFRESH_MS', 900000),
   liveMetadataEnabled: boolEnv('LIVE_METADATA_ENABLED', true),
+  keepAliveUrl: (process.env.KEEP_ALIVE_URL || '').trim(),
+  keepAliveMs: intEnv('KEEP_ALIVE_MS', 14 * 60 * 1000),
 };

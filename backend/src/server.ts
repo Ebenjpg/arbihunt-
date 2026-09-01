@@ -60,6 +60,30 @@ async function main(): Promise<void> {
   };
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
+
+  // -----------------------------------------------------------------
+  // Keep-alive self-ping: Render's free tier spins the service down
+  // after 15 minutes without inbound traffic. Pinging our own public
+  // /api/health URL every 14 minutes counts as traffic, so the service
+  // stays warm. Disabled when KEEP_ALIVE_URL is not set (local dev).
+  // -----------------------------------------------------------------
+  if (config.keepAliveUrl) {
+    const ping = async (): Promise<void> => {
+      try {
+        const res = await fetch(`${config.keepAliveUrl.replace(/\/$/, '')}/api/health`);
+        logger.info(undefined, 'KEEPALIVE', `self-ping ${res.ok ? 'ok' : `HTTP ${res.status}`}`);
+      } catch (err) {
+        logger.warn(undefined, 'KEEPALIVE', 'self-ping failed (will retry)', err);
+      }
+    };
+    // First ping shortly after boot so the initial 15-min window starts
+    // counting from real traffic, then every 14 minutes.
+    setTimeout(() => {
+      void ping();
+      setInterval(() => void ping(), config.keepAliveMs);
+    }, 30_000);
+    logger.info(undefined, 'KEEPALIVE', `self-ping every ${Math.round(config.keepAliveMs / 60000)} min -> ${config.keepAliveUrl}`);
+  }
 }
 
 main();

@@ -36,6 +36,12 @@ services:
         value: false
       - key: LIVE_METADATA_ENABLED
         value: true
+      # Keep-alive: pings its own /api/health every 14 min so the free tier
+      # never hits the 15-min idle spin-down. Must be the PUBLIC backend URL.
+      - key: KEEP_ALIVE_URL
+        value: https://arbihunt-backend.onrender.com
+      - key: KEEP_ALIVE_MS
+        value: 840000 # 14 minutes
       # ---- API keys: enter your real values in the Render dashboard ----
       - key: BINGX_API_KEY
         sync: false
