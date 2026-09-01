@@ -73,7 +73,7 @@ async function main(): Promise<void> {
         const res = await fetch(`${config.keepAliveUrl.replace(/\/$/, '')}/api/health`);
         logger.info(undefined, 'KEEPALIVE', `self-ping ${res.ok ? 'ok' : `HTTP ${res.status}`}`);
       } catch (err) {
-        logger.warn(undefined, 'KEEPALIVE', 'self-ping failed (will retry)', err);
+        logger.warn(undefined, 'KEEPALIVE', `self-ping failed (will retry): ${err instanceof Error ? err.message : String(err)}`);
       }
     };
     // First ping shortly after boot so the initial 15-min window starts
