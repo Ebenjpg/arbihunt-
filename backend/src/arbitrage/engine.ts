@@ -229,27 +229,34 @@ export class ArbitrageEngine {
         logger.info(undefined, 'DBG', `[TRACE] ${canonical}: traded=${traded.length} exchanges=[${traded.map((t) => t.exchange).join(',')}] median=${median}`);
       }
 
-      // Per token, surface ONLY the strongest routes (user requirement):
-      // buy on the single CHEAPEST exchange (lowest ask), then sell on the
-      // highest-paying exchanges (best bids), capped at MAX_PAIRS_PER_TOKEN
-      // (default 2). Example: AI trades at $1 binance, $2 bybit, $3 mexc,
-      // $4 kucoin -> rows are binance->mexc and binance->kucoin only; the
-      // weaker bybit route is never shown.
-      const bestBuy = traded.reduce((a, b) => (Number(b.ask) < Number(a.ask) ? b : a));
-      const bestSells = traded
-        .filter((t) => t.exchange !== bestBuy.exchange)
-        .sort((a, b) => Number(b.bid) - Number(a.bid))
-        .slice(0, config.maxPairsPerToken);
-      if (canonical === 'ERG/USDT' || canonical === 'ICP/USDT' || canonical === 'VELO/USDT' || canonical === 'HEART/USDT' || canonical === 'GAIB/USDT') {
-        logger.info(undefined, 'DBG', `[TRACE] ${canonical}: buy=${bestBuy.exchange} sells=${bestSells.map((t) => t.exchange).join(',')}`);
+      // Collect EVERY viable buy-LOW / sell-HIGH pair for this token across the
+      // exchanges that quote it, so one token can produce MULTIPLE opportunity
+      // rows — each with its own buy/sell exchange, price edge and liquidity.
+      // The user then sees every market that pays less and every market that
+      // pays more, instead of only the single largest pair.
+      const pairs: { buy: string; sell: string; screen: number }[] = [];
+      for (const buy of traded) {
+        for (const sell of traded) {
+          if (buy.exchange === sell.exchange) continue;
+          const ask = Number(buy.ask);
+          const bid = Number(sell.bid);
+          if (!ask || !bid) continue;
+          const screen = ((bid - ask) / ask) * 100;
+          pairs.push({ buy: buy.exchange, sell: sell.exchange, screen });
+        }
       }
-      for (const sell of bestSells) {
-        const ask = Number(bestBuy.ask);
-        const bid = Number(sell.bid);
-        if (!ask || !bid) continue;
-        const screen = ((bid - ask) / ask) * 100;
-        if (screen > this.screenFloor() && screen <= 25) {
-          candidates.push({ canonical, buy: bestBuy.exchange, sell: sell.exchange, screen });
+      pairs.sort((a, b) => b.screen - a.screen);
+      // Keep the best MAX_PAIRS_PER_TOKEN routes per token so the table stays
+      // readable while still surfacing many distinct buy/sell opportunities and
+      // their liquidity pools.
+      const keep = Math.min(pairs.length, config.maxPairsPerToken);
+      if (canonical === 'ERG/USDT' || canonical === 'ICP/USDT' || canonical === 'VELO/USDT' || canonical === 'HEART/USDT' || canonical === 'GAIB/USDT') {
+        logger.info(undefined, 'DBG', `[TRACE] ${canonical}: pairs=${pairs.length} top3=${pairs.slice(0,3).map((p) => p.buy + '->' + p.sell + ' ' + p.screen.toFixed(2) + '%').join(' | ')}`);
+      }
+      for (let i = 0; i < keep; i++) {
+        const p = pairs[i];
+        if (p.screen > this.screenFloor() && p.screen <= 25) {
+          candidates.push({ canonical, buy: p.buy, sell: p.sell, screen: p.screen });
         }
       }
     }
@@ -288,14 +295,6 @@ export class ArbitrageEngine {
     }
 
     for (const opp of opps) this.store.set(opp);
-    // User requirement: never display tokens whose deposit or withdrawal is
-    // frozen/suspended (or otherwise not confirmed open) — an untransferable
-    // opportunity is unexecutable, so it is dropped entirely rather than shown.
-    for (const o of this.store.getAll()) {
-      if (o.transferStatus === 'NO COMMON NETWORK' || o.depositStatus === 'closed' || o.withdrawalStatus === 'closed') {
-        this.store.remove(o.id);
-      }
-    }
     this.store.prune(config.opportunityRetentionMs);
     this.pruneExpired(now);
     this.lastScan = now;
