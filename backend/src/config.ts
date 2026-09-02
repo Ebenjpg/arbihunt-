@@ -87,7 +87,7 @@ export const config: AppConfig = {
     : [],
   orderBookDepth: intEnv('ORDERBOOK_DEPTH', 20),
   maxCandidatesPerScan: intEnv('MAX_CANDIDATES_PER_SCAN', 400),
-  maxPairsPerToken: intEnv('MAX_PAIRS_PER_TOKEN', 6),
+  maxPairsPerToken: intEnv('MAX_PAIRS_PER_TOKEN', 2),
   orderBookCacheCapacity: intEnv('ORDERBOOK_CACHE_CAPACITY', 200000),
   opportunityRetentionMs: intEnv('OPPORTUNITY_RETENTION_MS', 300000),
   assetMetadataRefreshMs: intEnv('ASSET_METADATA_REFRESH_MS', 900000),

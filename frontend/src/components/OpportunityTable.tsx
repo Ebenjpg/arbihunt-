@@ -36,8 +36,6 @@ const COLUMNS: { key: SortKey | null; label: string; className?: string }[] = [
   { key: 'withdrawalFeeUsd', label: 'WDRW', className: 'hidden lg:table-cell' },
   { key: null, label: 'NETWORK' },
   { key: null, label: 'LIQUIDITY A/B' },
-  { key: 'buyLiquidityUsd', label: 'BUY LIQ', className: 'hidden lg:table-cell' },
-  { key: 'sellLiquidityUsd', label: 'SELL LIQ', className: 'hidden lg:table-cell' },
   { key: 'slippagePct', label: 'SLIP', className: 'hidden md:table-cell' },
   { key: 'capital', label: 'CAP', className: 'hidden sm:table-cell' },
   { key: 'netProfitUsd', label: 'NET $' },
@@ -145,8 +143,6 @@ export function OpportunityTable({ opportunities, sortKey, sortDir, onSort, onSe
                   <span className="text-muted"> / </span>
                   <span className="text-sky-400">${fmtCompact(o.sellLiquidityUsd)}</span>
                 </td>
-                <td className="hidden mono px-2 py-2 text-center text-slate-300 lg:table-cell">${fmtCompact(o.buyLiquidityUsd)}</td>
-                <td className="hidden mono px-2 py-2 text-center text-slate-300 lg:table-cell">${fmtCompact(o.sellLiquidityUsd)}</td>
                 <td className="hidden mono px-2 py-2 text-center text-slate-300 md:table-cell">{o.slippagePct.toFixed(2)}%</td>
                 <td className="hidden mono px-2 py-2 text-center text-slate-300 sm:table-cell">${o.capital.toLocaleString()}</td>
                 <td className={classNames('mono px-2 py-2 text-center font-semibold', profitClass)}>{fmtSigned(o.netProfitUsd)}</td>
