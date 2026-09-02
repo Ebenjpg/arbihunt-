@@ -13,7 +13,7 @@ interface ExchangeState {
   failAt: Map<string, number>;
 }
 
-const NEEDS_QUOTE_FALLBACK = new Set(['lbank', 'xt', 'latoken', 'btse']);
+const NEEDS_QUOTE_FALLBACK = new Set(['lbank', 'xt', 'gemini']);
 
 /** Skip re-fetching a symbol whose last depth attempt failed within this window
  * instead of wasting a request on a deterministic failure every full pass. */

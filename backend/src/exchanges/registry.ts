@@ -12,18 +12,18 @@ import { BitfinexAdapter } from './bitfinex';
 import { PoloniexAdapter } from './poloniex';
 import { BitmartAdapter } from './bitmart';
 import { WhitebitAdapter } from './whitebit';
-import { HitbtcAdapter } from './hitbtc';
 import { PhemexAdapter } from './phemex';
-import { AscendexAdapter } from './ascendex';
 import { BingxAdapter } from './bingx';
 import { CoinexAdapter } from './coinex';
 import { DigifinexAdapter } from './digifinex';
 import { BitrueAdapter } from './bitrue';
 import { LbankAdapter } from './lbank';
 import { XtAdapter } from './xt';
-import { LatokenAdapter } from './latoken';
-import { BtseAdapter } from './btse';
 import { ToobitAdapter } from './toobit';
+import { KrakenAdapter } from './kraken';
+import { GeminiAdapter } from './gemini';
+import { BitstampAdapter } from './bitstamp';
+import { BithumbAdapter } from './bithumb';
 import type { ExchangeAdapter } from './types';
 
 function buildAll(): ExchangeAdapter[] {
@@ -41,18 +41,18 @@ function buildAll(): ExchangeAdapter[] {
     new PoloniexAdapter(),
     new BitmartAdapter(),
     new WhitebitAdapter(),
-    new HitbtcAdapter(),
     new PhemexAdapter(),
-    new AscendexAdapter(),
     new BingxAdapter(),
     new CoinexAdapter(),
     new DigifinexAdapter(),
     new BitrueAdapter(),
     new LbankAdapter(),
     new XtAdapter(),
-    new LatokenAdapter(),
-    new BtseAdapter(),
     new ToobitAdapter(),
+    new KrakenAdapter(),
+    new GeminiAdapter(),
+    new BitstampAdapter(),
+    new BithumbAdapter(),
   ];
 }
 

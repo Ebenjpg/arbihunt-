@@ -9,7 +9,7 @@ import { CapitalSelector } from '../components/CapitalSelector';
 import { OpportunityTable } from '../components/OpportunityTable';
 import { DetailPanel } from '../components/DetailPanel';
 
-const EXCHANGE_OPTIONS = ['binance', 'bybit', 'okx', 'kucoin', 'gate', 'mexc', 'bitget', 'htx', 'cryptocom', 'bitfinex', 'poloniex', 'bitmart', 'whitebit', 'hitbtc', 'phemex', 'ascendex', 'bingx', 'coinex', 'digifinex', 'bitrue', 'lbank', 'xt', 'latoken', 'btse', 'toobit'];
+const EXCHANGE_OPTIONS = ['binance', 'bybit', 'okx', 'kucoin', 'gate', 'mexc', 'bitget', 'htx', 'cryptocom', 'bitfinex', 'poloniex', 'bitmart', 'whitebit', 'phemex', 'bingx', 'coinex', 'digifinex', 'bitrue', 'lbank', 'xt', 'toobit', 'kraken', 'gemini', 'bitstamp', 'bithumb'];
 
 export function Dashboard({ config, onConfig, freshMaxMs, staleMaxMs }: {
   config: ScannerConfig | null;

@@ -89,17 +89,17 @@ npm start
 
 | # | Exchange | Adapter | # | Exchange | Adapter |
 |---|----------|---------|---|----------|---------|
-| 1 | Binance | `binance.ts` | 14 | HitBTC | `hitbtc.ts` |
+| 1 | Binance | `binance.ts` | 14 | Kraken | `kraken.ts` |
 | 2 | Bybit | `bybit.ts` | 15 | Phemex | `phemex.ts` |
-| 3 | OKX | `okx.ts` | 16 | AscendEX | `ascendex.ts` |
+| 3 | OKX | `okx.ts` | 16 | Gemini | `gemini.ts` |
 | 4 | KuCoin | `kucoin.ts` | 17 | BingX | `bingx.ts` |
 | 5 | Gate.io | `gate.ts` | 18 | CoinEx | `coinex.ts` |
 | 6 | MEXC | `mexc.ts` | 19 | DigiFinex | `digifinex.ts` |
 | 7 | Bitget | `bitget.ts` | 20 | Bitrue | `bitrue.ts` |
 | 8 | HTX | `htx.ts` | 21 | LBank | `lbank.ts` |
 | 9 | Crypto.com | `cryptocom.ts` | 22 | XT.com | `xt.ts` |
-| 10 | Bitfinex | `bitfinex.ts` | 23 | LATOKEN | `latoken.ts` |
-| 11 | Poloniex | `poloniex.ts` | 24 | BTSE | `btse.ts` |
+| 10 | Bitfinex | `bitfinex.ts` | 23 | Bitstamp | `bitstamp.ts` |
+| 11 | Poloniex | `poloniex.ts` | 24 | Bithumb | `bithumb.ts` |
 | 12 | BitMart | `bitmart.ts` | 25 | Toobit | `toobit.ts` |
 | 13 | WhiteBIT | `whitebit.ts` | | | |
 
