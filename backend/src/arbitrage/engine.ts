@@ -23,6 +23,7 @@ import { liveMetadataService } from '../networks/liveMetadataService';
 import { verifyAssetIdentity } from '../networks/assetIdentity';
 import { getAdapter } from '../exchanges/registry';
 import { OpportunityStore } from './store';
+import { isDegradedNext, isResilientRow } from './sticky';
 import { computeTransferStatus, transferStatusDetail, transferTimeEstimate } from './status';
 
 /** Smallest transferable amount (in base-asset units) from the recommended network.
@@ -107,6 +108,8 @@ export class ArbitrageEngine {
   private ws?: WsManager;
   private scanTick = 0;
   private lastSelectTick = new Map<string, number>();
+  /** Consecutive degraded evaluations per route id (sticky protection). */
+  private degradedStrikes = new Map<string, number>();
 
   constructor() {
     this.ws = new WsManager(tickerService);
@@ -294,7 +297,25 @@ export class ArbitrageEngine {
       if (res.status === 'fulfilled' && res.value) opps.push(res.value);
     }
 
-    for (const opp of opps) this.store.set(opp);
+    for (const opp of opps) {
+      // Sticky protection: a stored row that is READY + profitable resists
+      // being overwritten by a transiently degraded snapshot (stale book,
+      // metadata blip). The degraded result must repeat stickyMaxStrikes
+      // consecutive times (or the grace period must lapse) before it wins.
+      // A genuinely closed edge (gross < minProfitPct) is accepted at once.
+      const existing = this.store.get(opp.id);
+      if (
+        existing &&
+        isResilientRow(existing, now, config.stickyGraceMs, config.minProfitPct) &&
+        isDegradedNext(existing, opp, config.minProfitPct, config.staleMaxMs)
+      ) {
+        const strikes = (this.degradedStrikes.get(opp.id) ?? 0) + 1;
+        this.degradedStrikes.set(opp.id, strikes);
+        if (strikes < config.stickyMaxStrikes) continue;
+      }
+      this.degradedStrikes.delete(opp.id);
+      this.store.set(opp);
+    }
     this.store.prune(config.opportunityRetentionMs);
     this.pruneExpired(now);
     this.lastScan = now;

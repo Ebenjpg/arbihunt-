@@ -65,6 +65,15 @@ export interface AppConfig {
    */
   keepAliveUrl: string;
   keepAliveMs: number;
+  /**
+   * Sticky protection grace window (ms). A stored READY+profitable row resists
+   * being overwritten by a transiently degraded refresh (stale order book,
+   * network-metadata blip) for this long. 0 disables the protection.
+   */
+  stickyGraceMs: number;
+  /** Consecutive degraded evaluations required before a degraded snapshot
+   *  replaces a resilient (READY + profitable) stored row. */
+  stickyMaxStrikes: number;
 }
 
 export const config: AppConfig = {
@@ -94,4 +103,6 @@ export const config: AppConfig = {
   liveMetadataEnabled: boolEnv('LIVE_METADATA_ENABLED', true),
   keepAliveUrl: (process.env.KEEP_ALIVE_URL || '').trim(),
   keepAliveMs: intEnv('KEEP_ALIVE_MS', 14 * 60 * 1000),
+  stickyGraceMs: intEnv('STICKY_GRACE_MS', 120000),
+  stickyMaxStrikes: intEnv('STICKY_MAX_STRIKES', 3),
 };
