@@ -546,6 +546,7 @@ export class ArbitrageEngine {
       withdrawalFeeKnown,
       executable: sim.executable,
       executableFlag: sim.executableFlag,
+      oneSided: netMatch.oneSided !== undefined,
     });
     const statusDetail = transferStatusDetail({
       networkStatus: netMatch.status,
@@ -556,6 +557,7 @@ export class ArbitrageEngine {
       recommended: rec,
       buy,
       sell,
+      oneSided: netMatch.oneSided !== undefined,
     });
 
     const liquidityOk = sim.maxExecutableCapital.gte(this.state.capital);
@@ -596,7 +598,13 @@ export class ArbitrageEngine {
       sellFeeSource: sellFee.source,
       network: rec?.id,
       networkChain: rec?.chain,
-      networkMatch: netMatch.status === 'ok' ? 'yes' : netMatch.status === 'unknown' ? 'unknown' : 'no',
+      networkMatch: netMatch.oneSided
+        ? 'partial'
+        : netMatch.status === 'ok'
+          ? 'yes'
+          : netMatch.status === 'unknown'
+            ? 'unknown'
+            : 'no',
       matchedNetworks,
       withdrawalFeeAsset: withdrawalFeeKnown ? rec?.withdrawalFee : undefined,
       withdrawalFeeUsd: num(sim.withdrawalFeeUsd),

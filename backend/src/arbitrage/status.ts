@@ -54,6 +54,9 @@ export function computeTransferStatus(input: {
   withdrawalFeeKnown?: boolean;
   executable: boolean;
   executableFlag: string;
+  /** True when exactly one side of the route has network data: the network +
+   *  fee are priced from the KNOWN side, but the other side is unconfirmed. */
+  oneSided?: boolean;
 }): TransferStatus {
   // Only POSITIVE identity conflict (contract addresses differ / provably
   // different tokens) is a hard block. 'unknown' (no evidence either way) is
@@ -65,6 +68,10 @@ export function computeTransferStatus(input: {
     case 'blocked':
       return 'TRANSFER BLOCKED';
     case 'unknown':
+      // One side knows the asset's networks (chain + fee priced from it), the
+      // other side has no data at all. Honest middle ground: the network IS
+      // displayed, but the route must never look fully transfer-ready.
+      if (input.oneSided) return 'NETWORK PARTIAL';
       return 'NETWORK UNKNOWN';
     case 'ok':
       break;
@@ -96,6 +103,7 @@ export function transferStatusDetail(input: {
   recommended: NetworkDescriptor | undefined;
   buy: string;
   sell: string;
+  oneSided?: boolean;
 }): string | undefined {
   if (input.assetStatus === 'unverified') {
     return `Asset identity conflict (contracts differ) between ${input.buy} and ${input.sell}`;
@@ -106,6 +114,11 @@ export function transferStatusDetail(input: {
     case 'blocked':
       return `Common networks exist ([${ids(input.fromNetworks)}]) but every route is closed on ${input.buy}/${input.sell}`;
     case 'unknown':
+      if (input.oneSided && input.recommended) {
+        const knownSide = input.fromNetworks && input.fromNetworks.length > 0 ? input.buy : input.sell;
+        const unknownSide = knownSide === input.buy ? input.sell : input.buy;
+        return `Network ${input.recommended.id} priced from ${knownSide} (fee source with data) — ${unknownSide} has no network data, deposit side unconfirmed`;
+      }
       if (!input.fromNetworks || input.fromNetworks.length === 0) return `No network data for ${input.buy}`;
       if (!input.toNetworks || input.toNetworks.length === 0) return `No network data for ${input.sell}`;
       if (input.recommended) return `Route ${input.recommended.id} not fully open on ${input.buy}/${input.sell}`;

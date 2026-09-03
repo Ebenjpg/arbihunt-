@@ -29,6 +29,45 @@ describe('symbol normalization', () => {
   });
 });
 
+describe('one-sided network match (known on one exchange only)', () => {
+  it('returns the BUY side networks when sell has no data', () => {
+    const net = matchNetworks({ from: [erc20, bep20], to: [] });
+    expect(net.oneSided).toBe('buy');
+    expect(net.status).not.toBe('ok');
+    expect(net.recommended?.id).toBe('BEP20'); // cheapest fee wins
+    // sell-side deposit status is unknown; buy-side withdrawal stays real
+    expect(net.matched[0].depositEnabled).toBe('unknown');
+    expect(net.matched.every((n) => n.withdrawalEnabled === 'open')).toBe(true);
+  });
+
+  it('returns the SELL side networks when buy has no data', () => {
+    const net = matchNetworks({ from: [], to: [trc20] });
+    expect(net.oneSided).toBe('sell');
+    expect(net.recommended?.id).toBe('TRC20');
+    expect(net.matched[0].withdrawalEnabled).toBe('unknown');
+    expect(net.matched[0].depositEnabled).toBe('open');
+  });
+
+  it('returns plain UNKNOWN when neither side has data', () => {
+    const net = matchNetworks({ from: [], to: [] });
+    expect(net.oneSided).toBeUndefined();
+    expect(net.matched).toHaveLength(0);
+    expect(net.recommended).toBeUndefined();
+  });
+
+  it('a one-sided match can never be fully verified (never READY)', () => {
+    const openNet: NetworkDescriptor = { ...erc20, depositEnabled: 'open', withdrawalEnabled: 'open' };
+    const net = matchNetworks({ from: [openNet], to: [] });
+    expect(net.status).toBe('unknown');
+  });
+
+  it('keeps real chain + fee on the known side so the route is priced', () => {
+    const net = matchNetworks({ from: [erc20], to: [], price: 2 });
+    expect(net.matched[0].chain).toBe('Ethereum');
+    expect(net.matched[0].withdrawalFee).toBe('6');
+  });
+});
+
 describe('network matching', () => {
   it('picks the cheapest compatible network (TRC20)', () => {
     const res = matchNetworks({ from: [trc20, erc20, bep20], to: [trc20, erc20], price: 1 });

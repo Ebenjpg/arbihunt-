@@ -70,6 +70,7 @@ export type TransferStatus =
   | 'TRANSFER BLOCKED'
   | 'NO COMMON NETWORK'
   | 'NETWORK UNKNOWN'
+  | 'NETWORK PARTIAL'
   | 'TRANSFER COST UNKNOWN'
   | 'ASSET UNVERIFIED'
   | 'INSUFFICIENT LIQUIDITY'
@@ -103,7 +104,7 @@ export interface Opportunity {
   sellFeeSource: FeeSource;
   network?: string;
   networkChain?: string;
-  networkMatch: 'yes' | 'no' | 'unknown';
+  networkMatch: 'yes' | 'no' | 'unknown' | 'partial';
   /** all compatible withdrawal/deposit networks (cheapest first) */
   matchedNetworks?: NetworkDescriptor[];
   withdrawalFeeAsset?: string;
@@ -162,6 +163,10 @@ export interface NetworkMatchResult {
   recommended?: NetworkDescriptor;
   status: 'ok' | 'blocked' | 'no-common' | 'unknown';
   reason: string;
+  /** Set when exactly ONE side has network data: the matched networks are the
+   *  KNOWN side's networks (priced + displayed), while the other side is
+   *  unconfirmed. Never presented as fully transfer-ready. */
+  oneSided?: 'buy' | 'sell';
 }
 
 export interface CalculatorRequest {
