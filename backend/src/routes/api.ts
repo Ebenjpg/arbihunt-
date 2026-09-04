@@ -15,6 +15,40 @@ export function registerRoutes(app: FastifyInstance): void {
     ts: Date.now(),
   }));
 
+  // Diagnostic: memory + uptime. On Render's free tier (512MB) an OOM kill
+  // restarts the process — an uptime that keeps dropping back to seconds is
+  // the fingerprint of memory-pressure restarts (vs. spin-down, which the
+  // keep-alive ping already prevents).
+  app.get('/api/status', async () => {
+    const mem = process.memoryUsage();
+    const now = Date.now();
+    return {
+      ok: true,
+      pid: process.pid,
+      nodeVersion: process.version,
+      platform: `${process.platform}/${process.arch}`,
+      uptimeSec: Math.round(process.uptime()),
+      startedAt: now - process.uptime() * 1000,
+      memory: {
+        rssMb: Math.round(mem.rss / 1048576),
+        heapUsedMb: Math.round(mem.heapUsed / 1048576),
+        heapTotalMb: Math.round(mem.heapTotal / 1048576),
+        externalMb: Math.round(mem.external / 1048576),
+        arrayBuffersMb: Math.round((mem.arrayBuffers ?? 0) / 1048576),
+      },
+      engine: {
+        lastScanAgeSec: Math.round((now - engine.lastScan) / 1000),
+        opportunities: engine.store.size(),
+        activeExchanges: getAdapters().length,
+      },
+      limits: {
+        orderBookDepth: config.orderBookDepth,
+        orderBookCacheCapacity: config.orderBookCacheCapacity,
+        maxCandidatesPerScan: config.maxCandidatesPerScan,
+      },
+    };
+  });
+
   app.get('/api/config', async () => ({
     backendPort: config.backendPort,
     demoMode: config.demoMode,
