@@ -698,16 +698,31 @@ export class ArbitrageEngine {
       if (f.onlyVerifiedAssets && !o.assetVerified) add('asset unverified');
       if (!f.showAll && o.transferStatus !== 'READY') add(`profitable-only requires READY (got ${o.transferStatus})`);
       // HARD RULE (every view mode): a route whose recommended network has its
-      // withdrawal (buy side) or deposit (sell side) SUSPENDED/closed — or whose
-      // every common route is blocked — can never complete today. Block those
-             // coins from the scanner entirely.
-      // HARD BLOCK: coins with suspended deposits or withdrawals are ALWAYS
-      // removed from the opportunity list, regardless of showAll setting.
+      // withdrawal (buy side) or deposit (sell side) SUSPENDED/closed/in
+      // maintenance — or whose every common route is blocked — can never
+      // complete today. Block those coins from the scanner entirely.
+      // HARD BLOCK: deposit suspended, withdrawal suspended, or in maintenance
+      // are ALWAYS removed from the opportunity list, regardless of showAll
+      // setting. Strict by design: an UNKNOWN status on either side is treated
+      // as potentially suspended/maintenance, so the row is dropped rather
+      // than surfaced with a fake edge. A 20%+ phantom spread on a chain we
+      // cannot confirm is open is worse than a missing row.
       const suspended: string[] = [];
-      if (o.depositStatus === 'closed') suspended.push('deposit suspended on sell exchange');
-      if (o.withdrawalStatus === 'closed') suspended.push('withdrawal suspended on buy exchange');
+      if (o.depositStatus === 'closed' || o.depositStatus === 'maintenance') suspended.push('deposit suspended on sell exchange');
+      if (o.depositStatus === 'unknown') suspended.push('deposit status unknown on sell exchange');
+      if (o.withdrawalStatus === 'closed' || o.withdrawalStatus === 'maintenance') suspended.push('withdrawal suspended on buy exchange');
+      if (o.withdrawalStatus === 'unknown') suspended.push('withdrawal status unknown on buy exchange');
       if (suspended.length) {
         filteredReasons.set(o.symbol, suspended);
+        return false;
+      }
+      // HARD RULE (every view mode): a route where BOTH the network and the
+      // withdrawal fee are unknown on both sides is fully unpriceable — neither
+      // end can confirm a working transfer path or its cost. If at least one
+      // side knows the network OR the withdrawal fee, the row stays so the user
+      // can still see the spread and verify manually.
+      if (o.transferStatus === 'WITHDRAWAL UNKNOWN') {
+        filteredReasons.set(o.symbol, ['network + withdrawal fee unknown on both sides']);
         return false;
       }
       // soft flags (only hidden when showAll=false)

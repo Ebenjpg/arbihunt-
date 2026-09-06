@@ -35,7 +35,7 @@ export interface FeeInfo {
   note?: string;
 }
 
-export type NetworkStatus = 'open' | 'closed' | 'unknown';
+export type NetworkStatus = 'open' | 'closed' | 'unknown' | 'maintenance';
 
 export interface NetworkDescriptor {
   /** canonical network id, e.g. TRC20, ERC20, BEP20, BTC, SOL */
@@ -72,6 +72,7 @@ export type TransferStatus =
   | 'NETWORK UNKNOWN'
   | 'NETWORK PARTIAL'
   | 'TRANSFER COST UNKNOWN'
+  | 'WITHDRAWAL UNKNOWN'
   | 'ASSET UNVERIFIED'
   | 'INSUFFICIENT LIQUIDITY'
   | 'NEGATIVE PROFIT'

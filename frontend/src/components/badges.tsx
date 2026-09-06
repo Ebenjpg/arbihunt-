@@ -32,6 +32,7 @@ export function NetworkBadge({ status }: { status: NetworkStatus }) {
     open: 'text-emerald-400',
     closed: 'text-rose-400',
     unknown: 'text-amber-400',
+    maintenance: 'text-rose-400',
   };
   return <span className={classNames('text-[11px] font-medium uppercase', map[status] ?? '')}>{status}</span>;
 }

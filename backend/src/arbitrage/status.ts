@@ -72,6 +72,10 @@ export function computeTransferStatus(input: {
       // other side has no data at all. Honest middle ground: the network IS
       // displayed, but the route must never look fully transfer-ready.
       if (input.oneSided) return 'NETWORK PARTIAL';
+      // Neither side has a usable network AND the withdrawal fee is not known
+      // from either exchange: the route is fully unpriceable on both sides and
+      // is suppressed at the API layer.
+      if (input.withdrawalFeeKnown === false) return 'WITHDRAWAL UNKNOWN';
       return 'NETWORK UNKNOWN';
     case 'ok':
       break;
